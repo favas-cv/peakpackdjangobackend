@@ -40,11 +40,11 @@ class ProductsApiView(APIView):
         
         category = req.GET.get('category') #from url parameter
         if category and category != "All":
-            products = products.filter(category__name__iexact=category.strip())
+            products = products.filter(category__name__iexact=category)
 
         season = req.GET.get('season')
         if season and season != "All":
-            products = products.filter(season__iexact=season.strip())
+            products = products.filter(season__iexact=season)
 
         search = req.GET.get('search')
         if search:

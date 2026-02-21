@@ -57,15 +57,11 @@ class ProductsApiView(APIView):
     
         
         paginator = Pagination()
-        
-        
         page = paginator.paginate_queryset(products,req)
+        serializer = ProductsSerializer(page,many=True)
         
-        if page is not None:
-            serializer = ProductsSerializer(page,many=True)
-            return paginator.get_paginated_response(serializer.data)
-        serializer = ProductsSerializer(products,many =True)
-        return Response(serializer.data)
+   
+        return paginator.get_paginated_response(serializer.data)
     
 #    only for admin jsut remind 
  

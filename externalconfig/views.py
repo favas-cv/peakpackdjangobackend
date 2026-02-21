@@ -20,62 +20,123 @@ class WeatherApiView(APIView):
         return ip
     
     
-    
-    def get(self,req):
-        ip = self.get_client_ip(req)
+    def get(self, req):
         
-        ip_info = requests.get(f"http://ip-api.com/json/{ip}").json()
+        try:
         
-        if ip_info.get('status') == 'success':
-            city = ip_info.get('city')
-        else:
-            
-            city = 'gulmarg'
-        
-        # lat = req.query_params.get('lat')
-        # lon = req.query_params.get('lon')
-        
-        url =  "https://api.weatherapi.com/v1/current.json"
-        
-        # if lat and lon:
-        #     query = f"{lat},{lon}"
-        # else:
-        #     query = city if city else 'kochi'
-            
-        
-        
-        params = {
-            "key":settings.WEATHER_API_KEY,
-            "q":city
+            ip = self.get_client_ip(req)
 
+        # Use HTTPS and timeout
+            ip_response = requests.get(
+            f"https://ip-api.com/json/{ip}",
+            timeout=5
+            )
+            ip_info = ip_response.json()
 
-        }
-        
-        repsonce = requests.get(url,params=params)
-        data = repsonce.json()
-        print(data)
-        temp = data['current']['temp_c']
-        condition = data['current']['condition']['text']
-        suggestion = "Perfect for local trip!"
-        
-        if temp> 30:
-            suggestion = 'Escape the heat! Visit Kashmir or Manali '
-        elif 'rain' in condition.lower():
-            suggestion = 'Enjoy monsoon in Munnar or Coorg!'
-        elif temp < 15:
-            suggestion ='Best time for Rajasthan desert camp!'
-        
-        
-        
-        return Response({
-            
-            'location':{
-                'name':data['location']['name'],
-                'region':data['location']['region'],
-                'country':data['location']['country']
-                
+            if ip_info.get("status") == "success" and ip_info.get("city"):
+                city = ip_info.get("city")
+            else:
+                city = "Kochi"  # Safe fallback
+
+            url = "https://api.weatherapi.com/v1/current.json"
+
+            params = {
+            "key": settings.WEATHER_API_KEY,
+            "q": city
+            }
+
+            weather_response = requests.get(url, params=params, timeout=5)
+            data = weather_response.json()
+
+        # 🔥 VERY IMPORTANT SAFETY CHECK
+            if "error" in data or "current" not in data:
+                return Response({
+                "error": "Weather service unavailable"
+                }, status=400)
+
+            temp = data["current"]["temp_c"]
+            condition = data["current"]["condition"]["text"]
+
+            suggestion = "Perfect for local trip!"
+
+            if temp > 30:
+                suggestion = "Escape the heat! Visit Kashmir or Manali"
+            elif "rain" in condition.lower():
+                suggestion = "Enjoy monsoon in Munnar or Coorg!"
+            elif temp < 15:
+                suggestion = "Best time for Rajasthan desert camp!"
+
+            return Response({
+                "location": {
+                "name": data["location"]["name"],
+                "region": data["location"]["region"],
+                "country": data["location"]["country"]
                 },
-            'temp':temp,
-            'condition':condition,
-            'suggestion':suggestion
-        })
+                "temp": temp,
+                "condition": condition,
+                "suggestion": suggestion
+            })
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+    
+    
+    
+    # def get(self,req):
+    #     ip = self.get_client_ip(req)
+        
+    #     ip_info = requests.get(f"http://ip-api.com/json/{ip}").json()
+        
+    #     if ip_info.get('status') == 'success':
+    #         city = ip_info.get('city')
+    #     else:
+            
+    #         city = 'gulmarg'
+        
+    #     # lat = req.query_params.get('lat')
+    #     # lon = req.query_params.get('lon')
+        
+    #     url =  "https://api.weatherapi.com/v1/current.json"
+        
+    #     # if lat and lon:
+    #     #     query = f"{lat},{lon}"
+    #     # else:
+    #     #     query = city if city else 'kochi'
+            
+        
+        
+    #     params = {
+    #         "key":settings.WEATHER_API_KEY,
+    #         "q":city
+
+
+    #     }
+        
+    #     repsonce = requests.get(url,params=params)
+    #     data = repsonce.json()
+    #     print(data)
+    #     temp = data['current']['temp_c']
+    #     condition = data['current']['condition']['text']
+    #     suggestion = "Perfect for local trip!"
+        
+    #     if temp> 30:
+    #         suggestion = 'Escape the heat! Visit Kashmir or Manali '
+    #     elif 'rain' in condition.lower():
+    #         suggestion = 'Enjoy monsoon in Munnar or Coorg!'
+    #     elif temp < 15:
+    #         suggestion ='Best time for Rajasthan desert camp!'
+        
+        
+        
+    #     return Response({
+            
+    #         'location':{
+    #             'name':data['location']['name'],
+    #             'region':data['location']['region'],
+    #             'country':data['location']['country']
+                
+    #             },
+    #         'temp':temp,
+    #         'condition':condition,
+    #         'suggestion':suggestion
+    #     })

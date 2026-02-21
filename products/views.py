@@ -38,9 +38,9 @@ class ProductsApiView(APIView):
         #     return Response({"error":"Products not Exist"})
 
         
-        category = req.GET.get('category') #from url parameter
-        if category and category != "All":
-            products = products.filter(category__name__iexact=category)
+        url_category = req.GET.get('category') #from url parameter
+        if url_category and url_category != "All":
+            products = products.filter(category__name__iexact=url_category)
 
         season = req.GET.get('season')
         if season and season != "All":

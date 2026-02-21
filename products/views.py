@@ -40,11 +40,11 @@ class ProductsApiView(APIView):
         
         category = req.GET.get('category') #from url parameter
         if category and category != "All":
-            products = products.filter(category__name__iexact=category)
+            products = products.filter(category__name__iexact=category.strip())
 
         season = req.GET.get('season')
         if season and season != "All":
-            products = products.filter(season__iexact=season)
+            products = products.filter(season__iexact=season.strip())
 
         search = req.GET.get('search')
         if search:
@@ -57,11 +57,15 @@ class ProductsApiView(APIView):
     
         
         paginator = Pagination()
-        page = paginator.paginate_queryset(products,req)
-        serializer = ProductsSerializer(page,many=True)
         
-   
-        return paginator.get_paginated_response(serializer.data)
+        
+        page = paginator.paginate_queryset(products,req)
+        
+        if page is not None:
+            serializer = ProductsSerializer(page,many=True)
+            return paginator.get_paginated_response(serializer.data)
+        serializer = ProductsSerializer(products,many =True)
+        return Response(serializer.data)
     
 #    only for admin jsut remind 
  

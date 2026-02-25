@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt import token_blacklist
 from rest_framework_simplejwt.exceptions import TokenError
 from django.http import JsonResponse
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAdminUser
 from .models import User
 
 
@@ -127,7 +127,7 @@ from products.pagination import Pagination
 
 class UsersListApiView(APIView):
     
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
     
     def get(self,req):
         users =User.objects.all().order_by('id')

@@ -86,7 +86,7 @@ class ProductDetailApiView(APIView):
         try:
             product = ProductsModel.objects.get(pk=pk)
         except ProductsModel.DoesNotExist:
-            raise Response({"errors":"The Product Does Not Found"})
+            return Response({"errors":"The Product Does Not Found"})
         
         serializer = ProductsSerializer(product)
         return Response(serializer.data,status=status.HTTP_200_OK)
@@ -97,7 +97,7 @@ class ProductDetailApiView(APIView):
     
     
 class CategoryApiView(APIView):
-    permission_classes=[IsAdminUser]
+    permission_classes=[AllowAny]
     
     def get(self,req):
         categories = Category.objects.all()

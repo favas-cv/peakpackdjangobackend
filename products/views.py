@@ -39,7 +39,6 @@ class ProductsApiView(APIView):
 
         
         url_category = req.GET.get('category') #from url parameter
-        print(f"DEBUG: Filtering by category name: {url_category}")
         if url_category and url_category != "All":
             products = products.filter(category__name__iexact=url_category)
 

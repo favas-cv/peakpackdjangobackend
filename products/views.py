@@ -7,7 +7,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser,FormParser,JSONParser
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.permissions import IsAuthenticated,AllowAny,IsAdminUser
 
 # class Products(ModelViewSet):
     
@@ -23,7 +23,7 @@ from .pagination import Pagination
 import cloudinary.uploader
     
 class ProductsApiView(APIView):
-    
+    authentication_classes = []
     permission_classes = [AllowAny]
     parser_classes = [MultiPartParser,FormParser,JSONParser]
     
@@ -66,18 +66,19 @@ class ProductsApiView(APIView):
     
 #    only for admin jsut remind 
  
-    def post(self,req):
+    # def post(self,req):
         
-        serializer = ProductsSerializer(data=req.data) #many=true for bulk update 
-        #when add images dont give bcz it will change to error 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    #     serializer = ProductsSerializer(data=req.data) #many=true for bulk update 
+    #     #when add images dont give bcz it will change to error 
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data,status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
     
     
 class ProductDetailApiView(APIView):
+    authentication_classes =[]
     
     permission_classes = [AllowAny]
     
@@ -85,7 +86,7 @@ class ProductDetailApiView(APIView):
         
         try:
             product = ProductsModel.objects.get(pk=pk)
-        except ProductsModel.DoesNotFound:
+        except ProductsModel.DoesNotExist:
             raise Response({"errors":"The Product Does Not Found"})
         
         serializer = ProductsSerializer(product)
@@ -97,7 +98,7 @@ class ProductDetailApiView(APIView):
     
     
 class CategoryApiView(APIView):
-    permission_classes=[AllowAny]
+    permission_classes=[IsAdminUser]
     
     def get(self,req):
         categories = Category.objects.all()
@@ -115,7 +116,7 @@ class CategoryApiView(APIView):
 
 
 class ProductAdminView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
     
     def get(self,req,pk=None):
         
@@ -174,7 +175,7 @@ class ProductAdminView(APIView):
 from django.db.models import Count
 
 class AdminDashboardProduct(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
     
     def get(self,req):
         count = ProductsModel.objects.count()
